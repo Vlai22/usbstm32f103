@@ -13,7 +13,7 @@ typedef struct {
     uint8_t *device_descriptor;
     uint8_t *config_descriptor;   
 } USB_DeviceConfig;
-void VITC_USB_ReadPMA(Endpoint *ep, uint8_t *user_buf, uint16_t n_bytes);
+void VITC_USB_ReadPMA(Endpoint *ep, uint8_t *user_buf);
 void VITC_USB_WritePMA(Endpoint *ep, uint8_t *user_buf, uint16_t n_bytes);
 void ActivateEP(Endpoint *ep);
 void InitUSB(USB_DeviceConfig *configmy);

@@ -7,8 +7,22 @@
 #include "stm32f1xx_ll_bus.h"
 static USB_DeviceConfig *config = NULL;
 Endpoint ep0;
+void VITC_ITM_SendChar(uint8_t ch) {
+    if (((ITM->TCR & ITM_TCR_ITMENA_Msk) != 0UL) &&      // ITM включен
+        ((ITM->TER & 1UL) != 0UL))                      // Порт 0 разрешен
+    {
+        while (ITM->PORT[0].u32 == 0UL);                // Ждем готовности FIFO
+        ITM->PORT[0].u8 = ch;                           // Записываем байт
+    }
+}
+void ITM_SendString(const char *ptr) {
+    while (*ptr != '\0') {
+        VITC_ITM_SendChar((uint8_t)*ptr);
+        ptr++;
+    }
+}
 void ActivateEP(Endpoint *ep){
-    uint32_t *btable = USB_PMAADDR;// получаем значения таблицы что бы задать в нужные в завимисости от точки данные смещения информации
+    uint32_t *btable = (uint32_t *)USB_PMAADDR;// получаем значения таблицы что бы задать в нужные в завимисости от точки данные смещения информации
     uint32_t *ep_reg = (uint32_t *)USB_BASE + ep->num;//получаем адрес в котором находяться настройки конечной точки по номеру точик
     uint32_t now = *ep_reg;
     now = (now ^ 0x3030)& 0x3030;
@@ -31,7 +45,8 @@ void ActivateEP(Endpoint *ep){
 }
 void VITC_USB_ReadPMA(Endpoint *ep, uint8_t *user_buf) {
     uint32_t *pma_data_ptr = (uint32_t *)USB_PMAADDR + ep->pmaaddr_rx;// получаем адрес нахождения данных
-    uint32_t len = btable[ep->num * 4 + 3] & 0x03FF;//чтение количества байт принятых
+    uint32_t *btable = (uint32_t *)USB_PMAADDR + ep->num * 4;
+    uint32_t len = btable[3] & 0x03FF;//чтение количества байт принятых
     for(int i=0;i<len;i=i+2){
         user_buf[i] =(uint8_t)(pma_data_ptr[i/2]) & 0xFF;//читаем первый байт
         if(i + 1 < len ){
@@ -67,6 +82,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void){
     if(istr & USB_ISTR_RESET){
         USB->ISTR = (uint16_t)(~USB_ISTR_RESET);
         USB->DADDR = USB_DADDR_EF | 0;
+        USB->BTABLE = 0;
         ep0.num = 0;
         ep0.pmaaddr_rx = 0x40;
         ep0.pmaaddr_tx = 0x80;
@@ -77,7 +93,13 @@ void USB_LP_CAN1_RX0_IRQHandler(void){
     }
     if(istr & USB_ISTR_CTR){
         if(ep_num == 0){
-
+            uint8_t str[64];
+            VITC_ITM_SendChar('!');
+            VITC_USB_ReadPMA(&ep0, str);
+            uint32_t *ep_reg = (uint32_t *)USB_BASE + ep0.num;// регистр текущей конечной точки
+            uint32_t current = *ep_reg;//записываем текущее значение регистра
+            *ep_reg = (current & 0x070F) | 0x0080;//получаем текущее значение и инвертируем биты для записи VALID в регистр только необходимые записываем в регистр нужные значения 
+            ITM_SendString(str);
         }
     }
 }

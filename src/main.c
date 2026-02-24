@@ -5,9 +5,6 @@
 #include "stm32f1xx_ll_bus.h"
 #include "VITC_usb.h"
 volatile uint32_t microsec = 0;
-
-
-
 void ITM_Enable(void) {
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // Разрешить трассировку
     ITM->LAR = 0xC5ACCE55;                          // Разблокировать доступ к ITM
@@ -31,7 +28,8 @@ int main(void) {
     SystemCoreClockUpdate();// обновление системного тактирования
 
     ITM_Enable();//включаем отладочную консоль SWV
-
+    USB_DeviceConfig *config;
+    InitUSB(config);
     while(1) {
 
     }
