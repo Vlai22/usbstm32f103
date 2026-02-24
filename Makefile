@@ -11,9 +11,9 @@ DEFS      = -DSTM32F103xB
 
 # 3. Пути
 INCLUDES = -I./include \
-           -ID:/Projects/Embedded/CMSIS/CMSIS_6/CMSIS/Core/Include \
-           -ID:/Projects/Embedded/SCR_LIBS/stm32f1xx-hal-driver-fee494a92b5ad331f92ad21f76c66a5cb83773ee/Inc \
-		   -ID:\Projects\Embedded\SCR_LIBS\cmsis-device-f1-master\Include
+           -ID:\Projects\CMSIS\Core\Include \
+           -ID:\Projects\stm32f1xx-hal-driver-master\stm32f1xx-hal-driver-master\Inc \
+		   -ID:\Projects\cmsis-device-f1-master\cmsis-device-f1-master\Include
 
 # Сборка флагов
 COMMON_FLAGS = $(CPU_FLAGS) $(OPT_FLAGS) $(DEFS) $(INCLUDES) -g3
