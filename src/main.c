@@ -28,8 +28,7 @@ int main(void) {
     SystemCoreClockUpdate();// обновление системного тактирования
 
     ITM_Enable();//включаем отладочную консоль SWV
-    USB_DeviceConfig *config;
-    InitUSB(config);
+    InitUSB();
     while(1) {
 
     }
